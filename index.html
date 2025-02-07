@@ -9,6 +9,7 @@
         input { padding: 10px; font-size: 16px; margin: 10px; width: 200px; }
         button { padding: 10px 20px; font-size: 16px; margin: 10px; cursor: pointer; }
         #qrisResult, #downloadBtn { display: none; }
+        #errorMessage { color: red; display: none; }
     </style>
 </head>
 <body>
@@ -21,10 +22,11 @@
     <br>
     <div id="qrisResult">
         <p>Scan QRIS untuk membayar:</p>
-        <img id="qrisImage" src="" alt="QRIS Code" width="250px">
+        <img id="qrisImage" src="" alt="QRIS Code">
         <br>
         <button id="downloadBtn" onclick="downloadQR()">Download QRIS</button>
     </div>
+    <p id="errorMessage"></p>
 
     <script>
         function checkInput() {
@@ -35,34 +37,29 @@
         function generateQR() {
             let nominal = document.getElementById('nominal').value;
 
-            if (nominal <= 0 || isNaN(nominal)) {
-                alert("Masukkan nominal yang valid!");
+            if (!nominal || nominal <= 0) {
+                alert("Masukkan nominal yang benar!");
                 return;
             }
 
-            let apiUrl = `https://bagusbhrl.vercel.app/orkut/createpayment?apikey=bagus&amount=${nominal}&codeqr=00020101021126670016COM.NOBUBANK.WWW01189360050300000879140214057125036591790303UMI51440014ID.CO.QRIS.WWW0215ID20232646203860303UMI5204481253033605802ID5918GOODFM21%20OK11756396008MINAHASA61059537162070703A016304D7A6`;
+            let apiUrl = `https://bagusbhrl.vercel.app/orkut/createpayment?apikey=bagus&amount=${encodeURIComponent(nominal)}&codeqr=00020101021126670016COM.NOBUBANK.WWW01189360050300000879140214057125036591790303UMI51440014ID.CO.QRIS.WWW0215ID20232646203860303UMI5204481253033605802ID5918GOODFM21%20OK11756396008MINAHASA61059537162070703A016304D7A6`;
 
             fetch(apiUrl)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error("Gagal mengambil data QRIS");
-                    }
-                    return response.json();
-                })
+                .then(response => response.json())
                 .then(data => {
-                    console.log("Respon API:", data);
-
-                    if (data && data.success && data.data && data.data.qrImageUrl) {
+                    if (data.success && data.data.qrImageUrl) {
                         document.getElementById('qrisImage').src = data.data.qrImageUrl;
                         document.getElementById('qrisResult').style.display = "block";
                         document.getElementById('downloadBtn').style.display = "inline-block";
+                        document.getElementById('errorMessage').style.display = "none";
                     } else {
-                        throw new Error("Respon API tidak valid");
+                        throw new Error("Gagal mendapatkan QRIS. Coba lagi.");
                     }
                 })
                 .catch(error => {
-                    console.error("Fetch Error:", error);
-                    alert("Terjadi kesalahan, coba lagi.");
+                    console.error("Error:", error);
+                    document.getElementById('errorMessage').innerText = "Terjadi kesalahan: " + error.message;
+                    document.getElementById('errorMessage').style.display = "block";
                 });
         }
 
