@@ -21,7 +21,7 @@
     <br>
     <div id="qrisResult">
         <p>Scan QRIS untuk membayar:</p>
-        <img id="qrisImage" src="" alt="QRIS Code">
+        <img id="qrisImage" src="" alt="QRIS Code" width="250px">
         <br>
         <button id="downloadBtn" onclick="downloadQR()">Download QRIS</button>
     </div>
@@ -42,35 +42,28 @@
 
             let apiUrl = `https://bagusbhrl.vercel.app/orkut/createpayment?apikey=bagus&amount=${nominal}&codeqr=00020101021126670016COM.NOBUBANK.WWW01189360050300000879140214057125036591790303UMI51440014ID.CO.QRIS.WWW0215ID20232646203860303UMI5204481253033605802ID5918GOODFM21%20OK11756396008MINAHASA61059537162070703A016304D7A6`;
 
-            console.log("Fetching QRIS from:", apiUrl);
+            fetch(apiUrl)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("Gagal mengambil data QRIS");
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log("Respon API:", data);
 
-            fetch(apiUrl, {
-                method: "GET",
-                headers: {
-                    "Accept": "application/json",
-                    "Content-Type": "application/json"
-                }
-            })
-            .then(response => {
-                console.log("Response Status:", response.status);
-                return response.json();
-            })
-            .then(data => {
-                console.log("API Response:", data);
-
-                if (data.success && data.data.qrImageUrl) {
-                    let qrisImage = document.getElementById('qrisImage');
-                    qrisImage.src = data.data.qrImageUrl;
-                    document.getElementById('qrisResult').style.display = "block";
-                    document.getElementById('downloadBtn').style.display = "inline-block";
-                } else {
-                    alert("Gagal membuat QRIS, coba lagi.");
-                }
-            })
-            .catch(error => {
-                console.error("Fetch Error:", error);
-                alert("Terjadi kesalahan, coba lagi.");
-            });
+                    if (data && data.success && data.data && data.data.qrImageUrl) {
+                        document.getElementById('qrisImage').src = data.data.qrImageUrl;
+                        document.getElementById('qrisResult').style.display = "block";
+                        document.getElementById('downloadBtn').style.display = "inline-block";
+                    } else {
+                        throw new Error("Respon API tidak valid");
+                    }
+                })
+                .catch(error => {
+                    console.error("Fetch Error:", error);
+                    alert("Terjadi kesalahan, coba lagi.");
+                });
         }
 
         function downloadQR() {
