@@ -39,14 +39,14 @@
             formData.append("file", file);
 
             try {
-                const response = await fetch("https://filezone-api.caliph.dev/upload", {
+                const response = await fetch("https://cdn.nkhm.xyz/upload", {
                     method: "POST",
                     body: formData
                 });
 
                 const data = await response.json();
-                if (data.status && data.result) {
-                    const uploadedUrl = data.result.url_file; // Direct file link dari FileZone
+                if (data.files && data.files.length > 0) {
+                    const uploadedUrl = data.files[0]; // URL hasil upload dari server
                     const customDomain = "https://testdoang-bgs.vercel.app"; // Ganti dengan domain lo
                     
                     // Proxy hasil upload ke domain lo sendiri
