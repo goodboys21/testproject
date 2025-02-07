@@ -3,72 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Donasi Kuota</title>
-    <style>
-        body { font-family: Arial, sans-serif; text-align: center; margin: 50px; }
-        input { padding: 10px; font-size: 16px; margin: 10px; width: 200px; }
-        button { padding: 10px 20px; font-size: 16px; margin: 10px; cursor: pointer; }
-        #qrisResult, #downloadBtn { display: none; }
-        #errorMessage { color: red; display: none; }
-    </style>
+    <title>Uploader Bagus Xixepen</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
-<body>
+<body class="bg-gray-100 flex flex-col items-center justify-center min-h-screen p-6">
 
-    <h2>Donasi Kuota</h2>
-    <p>Masukkan nominal donasi:</p>
-    <input type="number" id="nominal" placeholder="Masukkan nominal" oninput="checkInput()">
-    <br>
-    <button id="qrisBtn" disabled onclick="generateQR()">Buat QRIS</button>
-    <br>
-    <div id="qrisResult">
-        <p>Scan QRIS untuk membayar:</p>
-        <img id="qrisImage" src="" alt="QRIS Code">
-        <br>
-        <button id="downloadBtn" onclick="downloadQR()">Download QRIS</button>
+    <div class="bg-white p-6 rounded-lg shadow-md w-full max-w-md">
+        <h1 class="text-2xl font-bold text-center text-blue-600 mb-4">Uploader Bagus Xixepen</h1>
+        
+        <!-- Input File -->
+        <input type="file" id="fileInput" class="w-full p-2 border rounded mb-4" />
+
+        <!-- Tombol Upload -->
+        <button onclick="uploadFile()" class="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded transition">
+            Upload
+        </button>
+
+        <!-- Hasil Upload -->
+        <div id="result" class="mt-4 text-center text-gray-700 hidden">
+            <p class="text-sm">File berhasil diupload!</p>
+            <a id="fileLink" href="#" target="_blank" class="text-blue-500 font-semibold underline">Lihat File</a>
+        </div>
     </div>
-    <p id="errorMessage"></p>
 
     <script>
-        function checkInput() {
-            let nominal = document.getElementById('nominal').value;
-            document.getElementById('qrisBtn').disabled = nominal <= 0;
-        }
+        function uploadFile() {
+            const fileInput = document.getElementById("fileInput");
+            const file = fileInput.files[0];
+            if (!file) return alert("Pilih file dulu bro!");
 
-        function generateQR() {
-            let nominal = document.getElementById('nominal').value;
+            const formData = new FormData();
+            formData.append("file", file);
 
-            if (!nominal || nominal <= 0) {
-                alert("Masukkan nominal yang benar!");
-                return;
-            }
-
-            let apiUrl = `https://bagusbhrl.vercel.app/orkut/createpayment?apikey=bagus&amount=${encodeURIComponent(nominal)}&codeqr=00020101021126670016COM.NOBUBANK.WWW01189360050300000879140214057125036591790303UMI51440014ID.CO.QRIS.WWW0215ID20232646203860303UMI5204481253033605802ID5918GOODFM21%20OK11756396008MINAHASA61059537162070703A016304D7A6`;
-
-            fetch(apiUrl)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success && data.data.qrImageUrl) {
-                        document.getElementById('qrisImage').src = data.data.qrImageUrl;
-                        document.getElementById('qrisResult').style.display = "block";
-                        document.getElementById('downloadBtn').style.display = "inline-block";
-                        document.getElementById('errorMessage').style.display = "none";
-                    } else {
-                        throw new Error("Gagal mendapatkan QRIS. Coba lagi.");
-                    }
-                })
-                .catch(error => {
-                    console.error("Error:", error);
-                    document.getElementById('errorMessage').innerText = "Terjadi kesalahan: " + error.message;
-                    document.getElementById('errorMessage').style.display = "block";
-                });
-        }
-
-        function downloadQR() {
-            let qrisImage = document.getElementById('qrisImage').src;
-            let link = document.createElement('a');
-            link.href = qrisImage;
-            link.download = "qris_donasi.png";
-            link.click();
+            fetch("https://cdn.rafaelxd.tech/upload", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.url) {
+                    const myDomain = "https://testdoang-bgs.vercel.app"; // Ganti dengan domain lo
+                    document.getElementById("fileLink").href = myDomain + "/uploads/" + file.name;
+                    document.getElementById("fileLink").innerText = myDomain + "/uploads/" + file.name;
+                    document.getElementById("result").classList.remove("hidden");
+                } else {
+                    alert("Upload gagal bro, coba lagi!");
+                }
+            })
+            .catch(() => alert("Terjadi kesalahan saat upload."));
         }
     </script>
 
