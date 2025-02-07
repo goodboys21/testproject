@@ -24,10 +24,13 @@
             <p class="text-sm">File berhasil diupload!</p>
             <a id="fileLink" href="#" target="_blank" class="text-blue-500 font-semibold underline">Lihat File</a>
         </div>
+
+        <!-- Error -->
+        <p id="errorMsg" class="text-red-500 text-center mt-2 hidden"></p>
     </div>
 
     <script>
-        function uploadFile() {
+        async function uploadFile() {
             const fileInput = document.getElementById("fileInput");
             const file = fileInput.files[0];
             if (!file) return alert("Pilih file dulu bro!");
@@ -35,22 +38,29 @@
             const formData = new FormData();
             formData.append("file", file);
 
-            fetch("https://cdn.rafaelxd.tech/upload", {
-                method: "POST",
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
+            try {
+                const response = await fetch("https://cdn.rafaelxd.tech/upload", {
+                    method: "POST",
+                    body: formData
+                });
+
+                const data = await response.json();
                 if (data.url) {
                     const myDomain = "https://testdoang-bgs.vercel.app"; // Ganti dengan domain lo
-                    document.getElementById("fileLink").href = myDomain + "/uploads/" + file.name;
-                    document.getElementById("fileLink").innerText = myDomain + "/uploads/" + file.name;
+                    const fileName = file.name.replace(/\s+/g, '_'); // Hilangin spasi di nama file
+                    
+                    document.getElementById("fileLink").href = myDomain + "/uploads/" + fileName;
+                    document.getElementById("fileLink").innerText = myDomain + "/uploads/" + fileName;
                     document.getElementById("result").classList.remove("hidden");
+                    document.getElementById("errorMsg").classList.add("hidden");
                 } else {
-                    alert("Upload gagal bro, coba lagi!");
+                    document.getElementById("errorMsg").innerText = "Upload gagal bro, coba lagi!";
+                    document.getElementById("errorMsg").classList.remove("hidden");
                 }
-            })
-            .catch(() => alert("Terjadi kesalahan saat upload."));
+            } catch (error) {
+                document.getElementById("errorMsg").innerText = "Terjadi kesalahan saat upload.";
+                document.getElementById("errorMsg").classList.remove("hidden");
+            }
         }
     </script>
 
