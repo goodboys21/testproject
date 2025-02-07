@@ -1,159 +1,67 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>bagus-api</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <title>Donasi Kuota</title>
     <style>
-        /* Background Video */
-        #bg-video {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            z-index: -1;
-        }
-
-        /* Overlay untuk meningkatkan keterbacaan */
-        .overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.3);
-            z-index: 0;
-        }
-
-        /* Kotak header warna biru pudar */
-        .header {
-            background: rgba(52, 152, 219, 0.8);
-            backdrop-filter: blur(10px);
-            padding: 1rem;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        /* Kotak putih transparan */
-        .box {
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(8px);
-            padding: 1.5rem;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        /* Animasi kursor berkedip */
-        .typing::after {
-            content: '|';
-            animation: blink 0.7s infinite;
-        }
-
-        @keyframes blink {
-            50% { opacity: 0; }
-        }
+        body { font-family: Arial, sans-serif; text-align: center; margin: 50px; }
+        input { padding: 10px; font-size: 16px; margin: 10px; width: 200px; }
+        button { padding: 10px 20px; font-size: 16px; margin: 10px; cursor: pointer; }
+        #qrisResult, #downloadBtn { display: none; }
     </style>
 </head>
-<body class="bg-blue-50 text-gray-800">
-    <!-- Background Video -->
-    <video id="bg-video" autoplay muted loop>
-        <source src="https://files.catbox.moe/8wqvbd.mp4" type="video/mp4">
-        Your browser does not support the video tag.
-    </video>
+<body>
 
-    <!-- Overlay -->
-    <div class="overlay"></div>
+    <h2>Donasi Kuota</h2>
+    <p>Masukkan nominal donasi:</p>
+    <input type="number" id="nominal" placeholder="Masukkan nominal" oninput="checkInput()">
+    <br>
+    <button id="qrisBtn" disabled onclick="generateQR()">Buat QRIS</button>
+    <br>
+    <div id="qrisResult">
+        <p>Scan QRIS untuk membayar:</p>
+        <img id="qrisImage" src="" alt="QRIS Code">
+        <br>
+        <button id="downloadBtn" onclick="downloadQR()">Download QRIS</button>
+    </div>
 
-    <!-- Header -->
-    <header class="header text-white shadow p-4 flex justify-between items-center">
-        <h1 class="text-3xl font-bold typing-header" id="typing-header"></h1>
-        <!-- Ganti ikon serigala dengan logo WhatsApp -->
-        <a href="https://wa.me/6281936845010" target="_blank">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp" width="32">
-        </a>
-    </header>
-
-    <!-- Main Content -->
-    <main class="container mx-auto mt-6 p-4">
-        <!-- Intro Section -->
-        <div class="box text-center">
-            <span class="typing" id="typing-text"></span>
-        </div>
-
-        <!-- Download Endpoints Section -->
-        <div class="box mt-8">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-2xl font-semibold text-blue-700">Orkut Api</h2>
-                <span class="text-green-600 text-sm font-semibold">3 endpoints</span>
-            </div>
-            <ul>
-                <li class="flex justify-between items-center py-3 border-b">
-                    <span class="text-blue-600 font-semibold">GET</span>
-                    <span class="text-gray-700">Create Payment</span>
-                    <a href="https://api.bagusstr.my.id/orkut/createpayment?apikey=bagus&amount=&codeqr=" class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded transition">Try</a>
-                </li>
-                <li class="flex justify-between items-center py-3 border-b">
-                    <span class="text-blue-600 font-semibold">GET</span>
-                    <span class="text-gray-700">Cek Status</span>
-                    <a href="https://api.bagusstr.my.id/orkut/cekstatus?apikey=bagus&merchant=&token=" class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded transition">Try</a>
-                </li>
-                <li class="flex justify-between items-center py-3 border-b">
-                    <span class="text-blue-600 font-semibold">GET</span>
-                    <span class="text-gray-700">Cek Saldo</span>
-                    <a href="https://api.bagusstr.my.id/orkut/ceksaldo?apikey=bagus&merchant=&pin=&password=" class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded transition">Try</a>
-                </li>
-            </ul>
-        </div>
-    </main>
-
-    <!-- JavaScript untuk efek ketik -->
     <script>
-        // Efek ketik pada "Created by BagusXyz"
-        const text = "Welcome To Bagus Rest Api";
-        const typingElement = document.getElementById("typing-text");
-        let index = 0;
-
-        function typeEffect() {
-            if (index < text.length) {
-                typingElement.innerHTML = text.substring(0, index + 1);
-                index++;
-                setTimeout(typeEffect, 100);
-            } else {
-                setTimeout(() => {
-                    index = 0;
-                    typingElement.innerHTML = "";
-                    typeEffect();
-                }, 2000);
-            }
+        function checkInput() {
+            let nominal = document.getElementById('nominal').value;
+            document.getElementById('qrisBtn').disabled = nominal <= 0;
         }
 
-        typeEffect();
+        function generateQR() {
+            let nominal = document.getElementById('nominal').value;
+            let apiUrl = `https://bagusbhrl.vercel.app/orkut/createpayment?apikey=bagus&amount=${nominal}&codeqr=00020101021126670016COM.NOBUBANK.WWW01189360050300000879140214057125036591790303UMI51440014ID.CO.QRIS.WWW0215ID20232646203860303UMI5204481253033605802ID5918GOODFM21%20OK11756396008MINAHASA61059537162070703A016304D7A6`;
 
-        // Efek ketik dan hapus pada "Bagus Xyz"
-        const headerText = "Bagus Api";
-        const typingHeader = document.getElementById("typing-header");
-        let headerIndex = 0;
-        let isDeleting = false;
-
-        function typeHeader() {
-            if (!isDeleting && headerIndex < headerText.length) {
-                typingHeader.innerHTML = headerText.substring(0, headerIndex + 1);
-                headerIndex++;
-                setTimeout(typeHeader, 150);
-            } else if (isDeleting && headerIndex > 0) {
-                typingHeader.innerHTML = headerText.substring(0, headerIndex - 1);
-                headerIndex--;
-                setTimeout(typeHeader, 100);
-            } else {
-                isDeleting = !isDeleting;
-                setTimeout(typeHeader, 1500);
-            }
+            fetch(apiUrl)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        let qrisImage = document.getElementById('qrisImage');
+                        qrisImage.src = data.data.qrImageUrl;
+                        document.getElementById('qrisResult').style.display = "block";
+                        document.getElementById('downloadBtn').style.display = "inline-block";
+                    } else {
+                        alert("Gagal membuat QRIS, coba lagi.");
+                    }
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    alert("Terjadi kesalahan, coba lagi.");
+                });
         }
 
-        typeHeader();
+        function downloadQR() {
+            let qrisImage = document.getElementById('qrisImage').src;
+            let link = document.createElement('a');
+            link.href = qrisImage;
+            link.download = "qris_donasi.png";
+            link.click();
+        }
     </script>
+
 </body>
 </html>
