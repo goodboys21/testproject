@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/file/:filename",
+      "destination": "http://filezone-cdn.caliph.dev/file/:filename"
+    }
+  ]
+}
