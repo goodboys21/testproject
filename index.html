@@ -46,19 +46,19 @@
 
                 const data = await response.json();
                 if (data.url) {
-                    const myDomain = "https://testdoang-bgs.vercel.app"; // Ganti dengan domain lo
-                    const fileName = file.name.replace(/\s+/g, '_'); // Hilangin spasi di nama file
+                    const uploadedUrl = data.url; // URL hasil upload dari server
+                    const customDomain = "https://testdoang-bgs.vercel.app"; // Ganti dengan domain lo
                     
-                    document.getElementById("fileLink").href = myDomain + "/uploads/" + fileName;
-                    document.getElementById("fileLink").innerText = myDomain + "/uploads/" + fileName;
+                    document.getElementById("fileLink").href = uploadedUrl;
+                    document.getElementById("fileLink").innerText = uploadedUrl;
                     document.getElementById("result").classList.remove("hidden");
                     document.getElementById("errorMsg").classList.add("hidden");
                 } else {
-                    document.getElementById("errorMsg").innerText = "Upload gagal bro, coba lagi!";
+                    document.getElementById("errorMsg").innerText = "Upload gagal bro, cek server!";
                     document.getElementById("errorMsg").classList.remove("hidden");
                 }
             } catch (error) {
-                document.getElementById("errorMsg").innerText = "Terjadi kesalahan saat upload.";
+                document.getElementById("errorMsg").innerText = "Kesalahan saat upload: " + error.message;
                 document.getElementById("errorMsg").classList.remove("hidden");
             }
         }
