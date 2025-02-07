@@ -39,19 +39,25 @@
             formData.append("file", file);
 
             try {
-                const response = await fetch("https://testdoang-bgs.vercel.app/api/upload", {
+                const response = await fetch("https://filezone-api.caliph.dev/upload", {
                     method: "POST",
                     body: formData
                 });
 
                 const data = await response.json();
-                if (data.url) {
-                    document.getElementById("fileLink").href = data.url;
-                    document.getElementById("fileLink").innerText = data.url;
+                if (data.status && data.result) {
+                    const uploadedUrl = data.result.url_file; // Direct file link dari FileZone
+                    const customDomain = "https://testdoang-bgs.vercel.app"; // Ganti dengan domain lo
+                    
+                    // Proxy hasil upload ke domain lo sendiri
+                    const proxiedUrl = customDomain + "/proxy?file=" + encodeURIComponent(uploadedUrl);
+
+                    document.getElementById("fileLink").href = proxiedUrl;
+                    document.getElementById("fileLink").innerText = proxiedUrl;
                     document.getElementById("result").classList.remove("hidden");
                     document.getElementById("errorMsg").classList.add("hidden");
                 } else {
-                    document.getElementById("errorMsg").innerText = "Upload gagal bro!";
+                    document.getElementById("errorMsg").innerText = "Upload gagal bro, cek server!";
                     document.getElementById("errorMsg").classList.remove("hidden");
                 }
             } catch (error) {
