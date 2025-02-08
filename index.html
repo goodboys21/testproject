@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Donasi - Bagus Xixepen</title>
+    <title>Donasi - Bagus Donasi</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-blue-50 text-gray-800">
@@ -11,7 +11,9 @@
     <!-- Header -->
     <header class="bg-blue-600 text-white shadow p-4">
         <div class="container mx-auto flex justify-between items-center">
-            <h1 class="text-3xl font-bold">Bagus Xixepen</h1>
+            <h1 class="text-3xl font-bold">
+                <span id="typewriter"></span>
+            </h1>
         </div>
     </header>
 
@@ -32,14 +34,37 @@
             <!-- Tempat QRIS -->
             <div id="qrisContainer" class="mt-4 hidden text-center">
                 <img id="qrisImage" src="" alt="QRIS" class="mx-auto w-48 h-48">
-                <a id="downloadQRIS" class="mt-2 bg-blue-500 text-white px-4 py-2 rounded inline-block hidden" download="qris.png">
+                <button id="downloadQRIS" class="mt-2 bg-blue-500 text-white px-4 py-2 rounded inline-block hidden">
                     Download QRIS
-                </a>
+                </button>
             </div>
         </section>
     </main>
 
     <script>
+        // Efek Ketik & Hapus
+        const textElement = document.getElementById("typewriter");
+        const text = "Bagus Donasi";
+        let index = 0;
+        let isDeleting = false;
+
+        function typeEffect() {
+            if (!isDeleting && index < text.length) {
+                textElement.innerText = text.substring(0, index + 1);
+                index++;
+                setTimeout(typeEffect, 150); // Kecepatan ketik
+            } else if (isDeleting && index > 0) {
+                textElement.innerText = text.substring(0, index - 1);
+                index--;
+                setTimeout(typeEffect, 100); // Kecepatan hapus
+            } else {
+                isDeleting = !isDeleting;
+                setTimeout(typeEffect, 1000); // Tunggu sebelum ulangi
+            }
+        }
+        typeEffect();
+
+        // Fungsi Validasi Nominal & QRIS
         document.getElementById("nominal").addEventListener("input", function () {
             const nominal = this.value;
             const btnQRIS = document.getElementById("generateQRIS");
@@ -65,9 +90,23 @@
 
                 if (data.status) {
                     document.getElementById("qrisImage").src = data.result.qrImageUrl;
-                    document.getElementById("downloadQRIS").href = data.result.qrImageUrl;
                     document.getElementById("qrisContainer").classList.remove("hidden");
                     document.getElementById("downloadQRIS").classList.remove("hidden");
+
+                    // Event listener buat download QRIS
+                    document.getElementById("downloadQRIS").addEventListener("click", async function () {
+                        const qrImage = await fetch(data.result.qrImageUrl);
+                        const qrBlob = await qrImage.blob();
+                        const qrURL = URL.createObjectURL(qrBlob);
+
+                        const a = document.createElement("a");
+                        a.href = qrURL;
+                        a.download = "qris.png";
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(qrURL);
+                    });
                 } else {
                     alert("Gagal membuat QRIS, coba lagi.");
                 }
