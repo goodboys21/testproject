@@ -9,11 +9,9 @@
 <body class="bg-blue-50 text-gray-800">
 
     <!-- Header -->
-    <header class="bg-blue-600 text-white shadow p-4">
-        <div class="container mx-auto flex justify-between items-center">
-            <h1 class="text-3xl font-bold">
-                <span id="typewriter"></span>
-            </h1>
+    <header class="bg-blue-600 text-white shadow p-4 flex justify-center">
+        <div class="text-3xl font-bold min-w-[180px] text-center">
+            <span id="typewriter"></span>
         </div>
     </header>
 
@@ -52,19 +50,19 @@
             if (!isDeleting && index < text.length) {
                 textElement.innerText = text.substring(0, index + 1);
                 index++;
-                setTimeout(typeEffect, 150); // Kecepatan ketik
+                setTimeout(typeEffect, 150);
             } else if (isDeleting && index > 0) {
                 textElement.innerText = text.substring(0, index - 1);
                 index--;
-                setTimeout(typeEffect, 100); // Kecepatan hapus
+                setTimeout(typeEffect, 100);
             } else {
                 isDeleting = !isDeleting;
-                setTimeout(typeEffect, 1000); // Tunggu sebelum ulangi
+                setTimeout(typeEffect, 1000);
             }
         }
         typeEffect();
 
-        // Fungsi Validasi Nominal & QRIS
+        // Validasi Nominal & QRIS
         document.getElementById("nominal").addEventListener("input", function () {
             const nominal = this.value;
             const btnQRIS = document.getElementById("generateQRIS");
@@ -91,21 +89,21 @@
                 if (data.status) {
                     document.getElementById("qrisImage").src = data.result.qrImageUrl;
                     document.getElementById("qrisContainer").classList.remove("hidden");
-                    document.getElementById("downloadQRIS").classList.remove("hidden");
 
-                    // Event listener buat download QRIS
-                    document.getElementById("downloadQRIS").addEventListener("click", async function () {
-                        const qrImage = await fetch(data.result.qrImageUrl);
-                        const qrBlob = await qrImage.blob();
-                        const qrURL = URL.createObjectURL(qrBlob);
-
+                    // Aktifkan tombol download QRIS
+                    const downloadBtn = document.getElementById("downloadQRIS");
+                    downloadBtn.classList.remove("hidden");
+                    downloadBtn.addEventListener("click", async function () {
+                        const response = await fetch(data.result.qrImageUrl);
+                        const blob = await response.blob();
+                        const url = window.URL.createObjectURL(blob);
                         const a = document.createElement("a");
-                        a.href = qrURL;
+                        a.href = url;
                         a.download = "qris.png";
                         document.body.appendChild(a);
                         a.click();
                         document.body.removeChild(a);
-                        URL.revokeObjectURL(qrURL);
+                        window.URL.revokeObjectURL(url);
                     });
                 } else {
                     alert("Gagal membuat QRIS, coba lagi.");
