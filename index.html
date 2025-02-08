@@ -3,72 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Uploader Bagus Xixepen</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <title>Upload File & Dapatkan Link</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 50px;
+        }
+        input, button {
+            margin: 10px;
+            padding: 10px;
+            font-size: 16px;
+        }
+        #fileLink {
+            display: block;
+            margin-top: 10px;
+            word-break: break-all;
+        }
+    </style>
 </head>
-<body class="bg-gray-100 flex flex-col items-center justify-center min-h-screen p-6">
-
-    <div class="bg-white p-6 rounded-lg shadow-md w-full max-w-md">
-        <h1 class="text-2xl font-bold text-center text-blue-600 mb-4">Uploader Bagus Xixepen</h1>
-        
-        <!-- Input File -->
-        <input type="file" id="fileInput" class="w-full p-2 border rounded mb-4" />
-
-        <!-- Tombol Upload -->
-        <button onclick="uploadFile()" class="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded transition">
-            Upload
-        </button>
-
-        <!-- Hasil Upload -->
-        <div id="result" class="mt-4 text-center text-gray-700 hidden">
-            <p class="text-sm">File berhasil diupload!</p>
-            <a id="fileLink" href="#" target="_blank" class="text-blue-500 font-semibold underline">Lihat File</a>
-        </div>
-
-        <!-- Error -->
-        <p id="errorMsg" class="text-red-500 text-center mt-2 hidden"></p>
-    </div>
+<body>
+    <h2>Upload File dan Dapatkan Link</h2>
+    <input type="file" id="fileInput">
+    <button onclick="uploadFile()">Upload</button>
+    <p id="status"></p>
+    <a id="fileLink" href="#" target="_blank"></a>
 
     <script>
-        async function uploadFile() {
-            const fileInput = document.getElementById("fileInput");
-            const file = fileInput.files[0];
-            if (!file) return alert("Pilih file dulu bro!");
+        function uploadFile() {
+            const fileInput = document.getElementById("fileInput").files[0];
+            if (!fileInput) {
+                alert("Pilih file dulu!");
+                return;
+            }
 
             const formData = new FormData();
-            formData.append("file", file);
+            formData.append("file", fileInput);
 
-            try {
-                const response = await fetch("https://cdn.acaw.my.id/upload", {
-                    method: "POST",
-                    body: formData,
-                    headers: {
-                        "accept": "application/json"
-                    }
-                });
-
-                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-
-                const data = await response.json();
-                if (data.fileUrl) {
-                    const uploadedUrl = data.fileUrl; // URL hasil upload dari server
-
-                    // Proxy hasil upload ke domain lo sendiri
-                    const proxiedUrl = `https://testdoang-bgs.vercel.app/proxy?file=${encodeURIComponent(uploadedUrl)}`;
-
-                    document.getElementById("fileLink").href = proxiedUrl;
-                    document.getElementById("fileLink").innerText = proxiedUrl;
-                    document.getElementById("result").classList.remove("hidden");
-                    document.getElementById("errorMsg").classList.add("hidden");
+            fetch("/api/upload", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.url) {
+                    document.getElementById("fileLink").href = data.url;
+                    document.getElementById("fileLink").innerText = data.url;
+                    document.getElementById("status").innerText = "Upload berhasil!";
                 } else {
-                    throw new Error("Upload gagal bro, cek server!");
+                    document.getElementById("status").innerText = "Upload gagal!";
                 }
-            } catch (error) {
-                document.getElementById("errorMsg").innerText = "Kesalahan saat upload: " + error.message;
-                document.getElementById("errorMsg").classList.remove("hidden");
-            }
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                document.getElementById("status").innerText = "Upload gagal!";
+            });
         }
     </script>
-
 </body>
 </html>
