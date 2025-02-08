@@ -32,9 +32,7 @@
             <!-- Tempat QRIS -->
             <div id="qrisContainer" class="mt-4 hidden text-center">
                 <img id="qrisImage" src="" alt="QRIS" class="mx-auto w-48 h-48">
-                <button id="downloadQRIS" class="mt-2 bg-blue-500 text-white px-4 py-2 rounded inline-block hidden">
-                    Download QRIS
-                </button>
+                <div id="countdown" class="mt-2 text-green-600 font-bold">Terimakasih sudah berdonasi, silahkan scan QRIS di atas sebelum waktu habis.</div>
             </div>
         </section>
     </main>
@@ -90,21 +88,26 @@
                     document.getElementById("qrisImage").src = data.result.qrImageUrl;
                     document.getElementById("qrisContainer").classList.remove("hidden");
 
-                    // Aktifkan tombol download QRIS
-                    const downloadBtn = document.getElementById("downloadQRIS");
-                    downloadBtn.classList.remove("hidden");
-                    downloadBtn.addEventListener("click", async function () {
-                        const response = await fetch(data.result.qrImageUrl);
-                        const blob = await response.blob();
-                        const url = window.URL.createObjectURL(blob);
-                        const a = document.createElement("a");
-                        a.href = url;
-                        a.download = "qris.png";
-                        document.body.appendChild(a);
-                        a.click();
-                        document.body.removeChild(a);
-                        window.URL.revokeObjectURL(url);
-                    });
+                    // Timer mundur 5 menit
+                    let timeLeft = 5 * 60;
+                    const countdownElement = document.getElementById("countdown");
+                    const interval = setInterval(() => {
+                        const minutes = Math.floor(timeLeft / 60);
+                        const seconds = timeLeft % 60;
+                        countdownElement.innerText = `Terimakasih sudah berdonasi, silahkan scan QRIS di atas sebelum waktu habis. (${minutes}:${seconds < 10 ? '0' : ''}${seconds})`;
+                        
+                        timeLeft--;
+
+                        if (timeLeft < 0) {
+                            clearInterval(interval);
+                            countdownElement.innerText = "Waktu habis :(";
+                            countdownElement.classList.remove("text-green-600");
+                            countdownElement.classList.add("text-red-600");
+
+                            // Ganti QRIS jadi silang
+                            document.getElementById("qrisImage").src = "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/Red_X.svg/768px-Red_X.svg.png";
+                        }
+                    }, 1000);
                 } else {
                     alert("Gagal membuat QRIS, coba lagi.");
                 }
