@@ -10,7 +10,7 @@
 
     <!-- Header -->
     <header class="bg-blue-600 text-white shadow p-4 flex justify-center">
-        <div class="text-3xl font-bold min-w-[180px] text-center">
+        <div class="text-3xl font-bold min-w-[180px] text-center h-10 flex items-center justify-center">
             <span id="typewriter"></span>
         </div>
     </header>
@@ -104,8 +104,8 @@
                             countdownElement.classList.remove("text-green-600");
                             countdownElement.classList.add("text-red-600");
 
-                            // Ganti QRIS jadi silang
-                            document.getElementById("qrisImage").src = "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/Red_X.svg/768px-Red_X.svg.png";
+                            // Hapus QRIS
+                            document.getElementById("qrisImage").remove();
                         }
                     }, 1000);
                 } else {
