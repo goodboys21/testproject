@@ -41,7 +41,7 @@
 <body class="text-gray-300 bg-gray-900">
 
     <!-- Background Video -->
-    <video class="video-bg" autoplay loop muted>
+    <video class="video-bg" autoplay loop muted onerror="this.style.display='none'; document.body.style.backgroundImage='url(https://source.unsplash.com/random/1920x1080/?space)';">
         <source src="https://files.catbox.moe/4u8827.mp4" type="video/mp4">
         Browser Anda tidak mendukung video.
     </video>
@@ -53,7 +53,7 @@
 
     <!-- Main Content -->
     <main class="flex items-center justify-center min-h-screen px-4">
-        <section class="glass-box w-full max-w-md p-6 mt-[-50px]">
+        <section class="glass-box w-full max-w-md p-6 mt-[-80px]">
             <h2 class="text-2xl font-semibold text-blue-400 text-center mb-4">Form Donasi</h2>
 
             <!-- Input Nominal -->
@@ -73,12 +73,14 @@
             <!-- Tempat QRIS -->
             <div id="qrisContainer" class="mt-4 text-center fade-in">
                 <img id="qrisImage" src="" alt="QRIS" class="mx-auto w-48 h-48 hidden">
-                <div id="countdown" class="mt-2 text-green-400 font-bold hidden">Silakan scan QRIS sebelum waktu habis.</div>
+                <div id="countdown" class="mt-2 text-green-400 font-bold hidden"></div>
             </div>
         </section>
     </main>
 
     <script>
+        let countdownTimer; // Variabel global buat countdown
+
         // Validasi Nominal & Tombol QRIS
         document.getElementById("nominal").addEventListener("input", function () {
             const nominal = this.value;
@@ -105,6 +107,9 @@
 
             if (nominal < 1000) return;
 
+            // Reset Timer kalau ada countdown yang jalan sebelumnya
+            clearInterval(countdownTimer);
+
             // Tampilkan loading
             loading.classList.remove("hidden");
 
@@ -118,6 +123,9 @@
                     qrisContainer.classList.add("show");
                     qrisImage.classList.remove("hidden");
                     countdown.classList.remove("hidden");
+
+                    // Mulai Countdown 5 Menit
+                    startCountdown(5 * 60, countdown, qrisImage);
                 } else {
                     alert("Gagal membuat QRIS, coba lagi.");
                 }
@@ -128,6 +136,28 @@
                 // Sembunyikan loading
                 loading.classList.add("hidden");
             }
+        }
+
+        // Fungsi Countdown
+        function startCountdown(duration, countdownElement, qrisImage) {
+            let timeLeft = duration;
+
+            function updateCountdown() {
+                let minutes = Math.floor(timeLeft / 60);
+                let seconds = timeLeft % 60;
+                countdownElement.innerHTML = `Sisa waktu: <span class="text-red-400">${minutes}:${seconds < 10 ? '0' : ''}${seconds}</span>`;
+
+                if (timeLeft <= 0) {
+                    clearInterval(countdownTimer);
+                    qrisImage.classList.add("hidden"); // Sembunyikan QRIS
+                    countdownElement.innerHTML = '<span class="text-red-500 font-bold">Yah, waktunya sudah habis :(</span>';
+                } else {
+                    timeLeft--;
+                }
+            }
+
+            updateCountdown(); // Jalankan sekali langsung
+            countdownTimer = setInterval(updateCountdown, 1000); // Perbarui setiap detik
         }
 
         // Event Listener buat QRIS
