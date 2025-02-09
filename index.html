@@ -73,7 +73,8 @@
             <!-- Tempat QRIS -->
             <div id="qrisContainer" class="mt-4 text-center fade-in">
                 <img id="qrisImage" src="" alt="QRIS" class="mx-auto w-48 h-48 hidden">
-                <div id="countdown" class="mt-2 text-green-400 font-bold hidden"></div>
+                <p id="countdown" class="text-green-400 font-bold hidden"></p>
+                <p id="qrisText" class="text-green-400 hidden">Silakan scan QRIS sebelum waktu habis.</p>
             </div>
         </section>
     </main>
@@ -103,6 +104,7 @@
             const qrisContainer = document.getElementById("qrisContainer");
             const qrisImage = document.getElementById("qrisImage");
             const countdown = document.getElementById("countdown");
+            const qrisText = document.getElementById("qrisText");
             const loading = document.getElementById("loading");
 
             if (nominal < 1000) return;
@@ -123,9 +125,10 @@
                     qrisContainer.classList.add("show");
                     qrisImage.classList.remove("hidden");
                     countdown.classList.remove("hidden");
+                    qrisText.classList.remove("hidden");
 
                     // Mulai Countdown 5 Menit
-                    startCountdown(5 * 60, countdown, qrisImage);
+                    startCountdown(5 * 60, countdown, qrisImage, qrisText);
                 } else {
                     alert("Gagal membuat QRIS, coba lagi.");
                 }
@@ -139,7 +142,7 @@
         }
 
         // Fungsi Countdown
-        function startCountdown(duration, countdownElement, qrisImage) {
+        function startCountdown(duration, countdownElement, qrisImage, qrisText) {
             let timeLeft = duration;
 
             function updateCountdown() {
@@ -150,7 +153,8 @@
                 if (timeLeft <= 0) {
                     clearInterval(countdownTimer);
                     qrisImage.classList.add("hidden"); // Sembunyikan QRIS
-                    countdownElement.innerHTML = '<span class="text-red-500 font-bold">Yah, waktunya sudah habis :(</span>';
+                    countdownElement.classList.add("hidden");
+                    qrisText.innerHTML = '<span class="text-red-500 font-bold">Yah, waktunya sudah habis :(</span>';
                 } else {
                     timeLeft--;
                 }
