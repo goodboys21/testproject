@@ -4,27 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bagus Payment</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: Arial, sans-serif;
-        }
-
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            overflow: hidden;
-            position: relative;
-            background-color: black;
-        }
-
-        /* Background video */
-        video {
-            position: absolute;
+        /* Background Video */
+        .video-bg {
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
@@ -33,167 +17,184 @@
             z-index: -1;
         }
 
-        /* Judul dengan animasi */
-        .title {
-            font-size: 40px;
-            font-weight: bold;
-            color: cyan;
-            text-align: center;
-            text-shadow: 0 0 15px cyan, 0 0 30px blue;
-            position: absolute;
-            top: 15%;
-            animation: flicker 1.5s infinite alternate;
-        }
-
-        @keyframes flicker {
-            0% { opacity: 1; }
-            100% { opacity: 0.8; }
-        }
-
-        /* Kotak blur */
-        .container {
-            background: rgba(0, 0, 0, 0.7);
+        /* Efek Glassmorphism */
+        .glass-box {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border-radius: 16px;
             padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-            width: 90%;
-            max-width: 400px;
-            position: relative;
-            top: -30px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
         }
 
-        .container h2 {
-            color: #4CAF50;
-            margin-bottom: 10px;
-        }
-
-        .input-box {
-            width: 100%;
-            padding: 10px;
-            font-size: 16px;
-            margin-bottom: 10px;
-            border: none;
-            border-radius: 5px;
-            text-align: center;
-        }
-
-        .btn {
-            background: #008CBA;
-            color: white;
-            border: none;
-            padding: 10px;
-            cursor: pointer;
-            font-size: 16px;
-            width: 100%;
-            border-radius: 5px;
-        }
-
-        .btn:hover {
-            background: #005f73;
-        }
-
-        #qris {
-            margin-top: 15px;
-        }
-
-        #status {
-            color: lime;
-            margin-top: 10px;
+        /* Efek Ketik & Cahaya */
+        .glow-text {
+            font-size: 3rem; /* Ukuran lebih besar */
             font-weight: bold;
+            text-align: center;
+            position: relative;
+            display: inline-block;
+            text-shadow: 0 0 10px rgba(0, 174, 255, 0.8), 0 0 20px rgba(0, 174, 255, 0.6), 0 0 30px rgba(0, 174, 255, 0.4);
+        }
+
+        /* Cursor Ketik */
+        .typing::after {
+            content: "|";
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            50% { opacity: 0; }
         }
     </style>
 </head>
-<body>
+<body class="text-gray-300 bg-gray-900">
 
     <!-- Background Video -->
-    <video autoplay loop muted>
-        <source src="your-video.mp4" type="video/mp4">
+    <video class="video-bg" autoplay loop muted onerror="this.style.display='none'; document.body.style.backgroundImage='url(https://source.unsplash.com/random/1920x1080/?space)';">
+        <source src="https://files.catbox.moe/4u8827.mp4" type="video/mp4">
+        Browser Anda tidak mendukung video.
     </video>
 
-    <!-- Judul dengan animasi ketik -->
-    <div class="title" id="animatedTitle"></div>
+    <!-- Header dengan Efek Ketik & Glow -->
+    <header class="text-white text-center py-12">
+        <h1 id="animatedText" class="glow-text typing"></h1>
+    </header>
 
-    <!-- Form Donasi -->
-    <div class="container">
-        <h2>Form Donasi</h2>
-        <input type="number" id="nominal" class="input-box" placeholder="Masukkan nominal">
-        <button class="btn" onclick="buatQRIS()">Buat QRIS</button>
-        <div id="qris"></div>
-        <div id="status"></div>
-    </div>
+    <!-- Main Content -->
+    <main class="flex items-center justify-center min-h-screen px-4">
+        <section class="glass-box w-full max-w-md p-6 mt-[-80px]">
+            <h2 class="text-2xl font-semibold text-blue-400 text-center mb-4">Form Donasi</h2>
+
+            <!-- Input Nominal -->
+            <label for="nominal" class="block text-gray-300 font-medium mb-2">Nominal Donasi:</label>
+            <input type="number" id="nominal" class="w-full p-3 bg-gray-800 border border-gray-600 rounded focus:ring-2 focus:ring-blue-400 focus:outline-none text-white" placeholder="Masukkan nominal" min="1000">
+
+            <!-- Tombol Buat QRIS -->
+            <button id="generateQRIS" class="bg-gray-600 text-white px-4 py-2 rounded w-full mt-4 cursor-not-allowed transition-all duration-300 ease-in-out" disabled>
+                Buat QRIS
+            </button>
+
+            <!-- Loading -->
+            <div id="loading" class="text-center mt-3 hidden">
+                <p class="text-yellow-400">Membuat QRIS...</p>
+            </div>
+
+            <!-- Tempat QRIS -->
+            <div id="qrisContainer" class="mt-4 text-center fade-in">
+                <img id="qrisImage" src="" alt="QRIS" class="mx-auto w-48 h-48 hidden">
+                <p id="countdown" class="text-green-400 font-bold hidden"></p>
+                <p id="qrisText" class="text-green-400 hidden">Silakan scan QRIS sebelum waktu habis.</p>
+            </div>
+        </section>
+    </main>
 
     <script>
-        // Animasi Ketik & Hapus Unlimited
-        const titleElement = document.getElementById("animatedTitle");
-        const texts = ["Bagus Payment"];
+        let countdownTimer; // Variabel buat countdown
+
+        // Efek Ketik & Hapus untuk Header
+        const texts = ["Bagus Payment", "Pembayaran Mudah", "Donasi Cepat"];
         let textIndex = 0;
         let charIndex = 0;
         let isDeleting = false;
+        const speed = 100; // Kecepatan ketik
+        const delay = 1500; // Jeda sebelum hapus
 
         function typeEffect() {
-            const currentText = texts[textIndex];
-            if (isDeleting) {
-                titleElement.innerHTML = currentText.substring(0, charIndex);
-                charIndex--;
+            const target = document.getElementById("animatedText");
+
+            if (!isDeleting) {
+                target.innerHTML = texts[textIndex].slice(0, charIndex++) + "<span class='typing'></span>";
             } else {
-                titleElement.innerHTML = currentText.substring(0, charIndex);
-                charIndex++;
+                target.innerHTML = texts[textIndex].slice(0, charIndex--) + "<span class='typing'></span>";
             }
 
-            if (!isDeleting && charIndex === currentText.length) {
-                isDeleting = true;
-                setTimeout(typeEffect, 1500); // Tunggu sebelum hapus
+            if (!isDeleting && charIndex === texts[textIndex].length) {
+                setTimeout(() => (isDeleting = true), delay);
             } else if (isDeleting && charIndex === 0) {
                 isDeleting = false;
-                setTimeout(typeEffect, 500); // Tunggu sebelum ketik ulang
+                textIndex = (textIndex + 1) % texts.length;
+            }
+
+            setTimeout(typeEffect, isDeleting ? speed / 2 : speed);
+        }
+
+        document.addEventListener("DOMContentLoaded", typeEffect);
+
+        // Validasi Input
+        document.getElementById("nominal").addEventListener("input", function () {
+            const nominal = this.value;
+            const btnQRIS = document.getElementById("generateQRIS");
+
+            if (nominal >= 1000) {
+                btnQRIS.classList.remove("bg-gray-600", "cursor-not-allowed");
+                btnQRIS.classList.add("bg-blue-500", "hover:bg-blue-600");
+                btnQRIS.disabled = false;
             } else {
-                setTimeout(typeEffect, isDeleting ? 100 : 150);
+                btnQRIS.classList.remove("bg-blue-500", "hover:bg-blue-600");
+                btnQRIS.classList.add("bg-gray-600", "cursor-not-allowed");
+                btnQRIS.disabled = true;
+            }
+        });
+
+        // Generate QRIS
+        async function generateQRIS() {
+            const nominal = document.getElementById("nominal").value;
+            const qrisContainer = document.getElementById("qrisContainer");
+            const qrisImage = document.getElementById("qrisImage");
+            const countdown = document.getElementById("countdown");
+            const qrisText = document.getElementById("qrisText");
+            const loading = document.getElementById("loading");
+
+            if (nominal < 1000) return;
+
+            clearInterval(countdownTimer);
+            loading.classList.remove("hidden");
+
+            try {
+                const response = await fetch(`https://rafaelxd.tech/api/orkut/createpayment?amount=${nominal}`);
+                const data = await response.json();
+
+                if (data.status) {
+                    qrisImage.src = data.result.qrImageUrl;
+                    qrisImage.classList.remove("hidden");
+                    countdown.classList.remove("hidden");
+                    qrisText.classList.remove("hidden");
+
+                    startCountdown(5 * 60, countdown, qrisImage, qrisText);
+                } else {
+                    alert("Gagal membuat QRIS, coba lagi.");
+                }
+            } catch (error) {
+                alert("Terjadi kesalahan.");
+            } finally {
+                loading.classList.add("hidden");
             }
         }
 
-        typeEffect();
+        function startCountdown(duration, countdownElement, qrisImage, qrisText) {
+            let timeLeft = duration;
 
-        // Fungsi Buat QRIS
-        function buatQRIS() {
-            let nominal = document.getElementById("nominal").value;
-            if (!nominal || nominal < 1000) {
-                alert("Nominal minimal 1000!");
-                return;
-            }
-
-            fetch(`https://rafaelxd.tech/api/orkut/createpayment?amount=${nominal}&codeqr=00020101021126670016COM.NOBUBANK.WWW01189360050300000879140214057125036591790303UMI51440014ID.CO.QRIS.WWW0215ID20232646203860303UMI5204481253033605802ID5918GOODFM21 OK11756396008MINAHASA61059537162070703A016304D7A6`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status) {
-                        let qrImageUrl = data.result.qrImageUrl;
-                        document.getElementById("qris").innerHTML = `<img src="${qrImageUrl}" width="200px">`;
-                        startCountdown();
-                    } else {
-                        alert("Gagal membuat QRIS!");
-                    }
-                })
-                .catch(error => console.error("Error:", error));
-        }
-
-        // Countdown 5 Menit
-        function startCountdown() {
-            let timeLeft = 300; // 5 menit dalam detik
-            let countdownInterval = setInterval(() => {
+            function updateCountdown() {
                 let minutes = Math.floor(timeLeft / 60);
                 let seconds = timeLeft % 60;
-                if (seconds < 10) seconds = "0" + seconds;
-
-                document.getElementById("status").innerHTML = `Silakan scan QRIS sebelum waktu habis. (${minutes}:${seconds})`;
+                countdownElement.innerHTML = `Sisa waktu: <span class="text-red-400">${minutes}:${seconds < 10 ? '0' : ''}${seconds}</span>`;
 
                 if (timeLeft <= 0) {
-                    clearInterval(countdownInterval);
-                    document.getElementById("qris").innerHTML = "";
-                    document.getElementById("status").innerHTML = "Yah waktunya sudah habis :(";
+                    clearInterval(countdownTimer);
+                    qrisImage.classList.add("hidden");
+                    countdownElement.classList.add("hidden");
+                    qrisText.innerHTML = '<span class="text-red-500 font-bold">Yah, waktunya sudah habis :(</span>';
+                } else {
+                    timeLeft--;
                 }
+            }
 
-                timeLeft--;
-            }, 1000);
+            updateCountdown();
+            countdownTimer = setInterval(updateCountdown, 1000);
         }
+
+        document.getElementById("generateQRIS").addEventListener("click", generateQRIS);
     </script>
 
 </body>
