@@ -17,18 +17,42 @@
             z-index: -1;
         }
 
-        /* Efek Blur ala iOS */
-        .blur-box {
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        /* Efek Blur Modern */
+        .glass-box {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        /* Animasi Header Neon */
+        @keyframes neonGlow {
+            0% { text-shadow: 0 0 5px #00eaff, 0 0 10px #00eaff; }
+            50% { text-shadow: 0 0 20px #00eaff, 0 0 30px #00eaff; }
+            100% { text-shadow: 0 0 5px #00eaff, 0 0 10px #00eaff; }
+        }
+
+        .neon-text {
+            animation: neonGlow 2s infinite alternate;
+        }
+
+        /* Animasi Muncul QRIS */
+        .fade-in {
+            opacity: 0;
+            transform: scale(0.9);
+            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+        }
+
+        .fade-in.show {
+            opacity: 1;
+            transform: scale(1);
         }
     </style>
 </head>
-<body class="text-gray-800">
+<body class="bg-gray-900 text-gray-300">
 
     <!-- Background Video -->
     <video class="video-bg" autoplay loop muted>
@@ -37,71 +61,57 @@
     </video>
 
     <!-- Header -->
-    <header class="bg-blue-600 text-white shadow p-4 flex justify-center">
-        <div class="text-3xl font-bold min-w-[180px] text-center h-10 flex items-center justify-center">
-            <span id="typewriter"></span>
-        </div>
+    <header class="text-white text-center py-6">
+        <h1 class="text-4xl font-bold neon-text">Bagus Donasi</h1>
     </header>
 
     <!-- Main Content -->
-    <main class="container mx-auto mt-6 p-4">
-        <section class="blur-box max-w-lg mx-auto">
-            <h2 class="text-2xl font-semibold text-blue-700 mb-4 text-center">Form Donasi</h2>
-            
+    <main class="flex justify-center items-center min-h-screen">
+        <section class="glass-box w-full max-w-md p-6">
+            <h2 class="text-2xl font-semibold text-blue-400 text-center mb-4">Form Donasi</h2>
+
             <!-- Input Nominal -->
-            <label for="nominal" class="block text-gray-700 font-medium mb-2">Nominal Donasi:</label>
-            <input type="number" id="nominal" class="w-full p-2 border rounded mb-4" placeholder="Masukkan nominal" min="1000">
+            <label for="nominal" class="block text-gray-300 font-medium mb-2">Nominal Donasi:</label>
+            <input type="number" id="nominal" class="w-full p-3 bg-gray-800 border border-gray-600 rounded focus:ring-2 focus:ring-blue-400 focus:outline-none text-white" placeholder="Masukkan nominal" min="1000">
 
             <!-- Tombol Buat QRIS -->
-            <button id="generateQRIS" class="bg-gray-400 text-white px-4 py-2 rounded w-full cursor-not-allowed" disabled>
+            <button id="generateQRIS" class="bg-gray-600 text-white px-4 py-2 rounded w-full mt-4 cursor-not-allowed transition-all duration-300 ease-in-out" disabled>
                 Buat QRIS
             </button>
 
             <!-- Tempat QRIS -->
-            <div id="qrisContainer" class="mt-4 hidden text-center">
+            <div id="qrisContainer" class="mt-4 text-center fade-in">
                 <img id="qrisImage" src="" alt="QRIS" class="mx-auto w-48 h-48">
-                <div id="countdown" class="mt-2 text-green-600 font-bold">Terimakasih sudah berdonasi, silahkan scan QRIS di atas sebelum waktu habis.</div>
+                <div id="countdown" class="mt-2 text-green-400 font-bold">Terimakasih sudah berdonasi, silahkan scan QRIS di atas sebelum waktu habis.</div>
             </div>
         </section>
     </main>
 
     <script>
-        // Efek Ketik & Hapus
-        const textElement = document.getElementById("typewriter");
-        const text = "Bagus Donasi";
-        let index = 0;
-        let isDeleting = false;
-
-        function typeEffect() {
-            if (!isDeleting && index < text.length) {
-                textElement.innerText = text.substring(0, index + 1);
-                index++;
-                setTimeout(typeEffect, 150);
-            } else if (isDeleting && index > 0) {
-                textElement.innerText = text.substring(0, index - 1);
-                index--;
-                setTimeout(typeEffect, 100);
-            } else {
-                isDeleting = !isDeleting;
-                setTimeout(typeEffect, 1000);
-            }
-        }
-        typeEffect();
-
-        // Validasi Nominal & QRIS
+        // Validasi Nominal & Tombol QRIS
         document.getElementById("nominal").addEventListener("input", function () {
             const nominal = this.value;
             const btnQRIS = document.getElementById("generateQRIS");
 
             if (nominal >= 1000) {
-                btnQRIS.classList.remove("bg-gray-400", "cursor-not-allowed");
+                btnQRIS.classList.remove("bg-gray-600", "cursor-not-allowed");
                 btnQRIS.classList.add("bg-blue-500", "hover:bg-blue-600");
                 btnQRIS.disabled = false;
             } else {
                 btnQRIS.classList.remove("bg-blue-500", "hover:bg-blue-600");
-                btnQRIS.classList.add("bg-gray-400", "cursor-not-allowed");
+                btnQRIS.classList.add("bg-gray-600", "cursor-not-allowed");
                 btnQRIS.disabled = true;
             }
+        });
+
+        // Animasi Muncul QRIS
+        document.getElementById("generateQRIS").addEventListener("click", function () {
+            const qrisContainer = document.getElementById("qrisContainer");
+            qrisContainer.classList.add("show");
+            qrisContainer.innerHTML = `
+                <img id="qrisImage" src="https://via.placeholder.com/150" alt="QRIS" class="mx-auto w-48 h-48 rounded">
+                <div id="countdown" class="mt-2 text-green-400 font-bold">Silakan scan QRIS sebelum waktu habis.</div>
+            `;
         });
     </script>
 
